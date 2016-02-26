@@ -1,0 +1,74 @@
+﻿@{
+    var db = Database.Open("main");
+    var selectQueryString = "SELECT * FROM main WHERE ID=00001";
+    var row = db.Query(selectQueryString).First();
+}
+<!DOCTYPE html>
+
+<html lang="cn">
+    <head>
+        <meta charset="utf-8" />
+        <title>网罗名牌 时尚生活</title>
+        <link rel="stylesheet" type="text/css" href="ProductViewer.css">
+    </head>
+    <body>
+        <div id="navigator">
+            <ul>
+              <li><a class="active" href="#home">主页</a></li>
+              <li><a href="#news">男装</a></li>
+              <li><a href="#contact">女装</a></li>
+              <li><a href="#about">优惠</a></li>
+            </ul>
+        </div>
+        <div id="content" class="clearfix">
+            <div id="galary">
+                @foreach(var imgLink in row.ImageLinks.Split(';'))
+                {
+                    <div class="img">
+                      <a target="_blank" href="@imgLink">
+                        <img src="@imgLink" alt="图片链接失效">
+                      </a>
+                    </div>
+                }
+            </div>
+            <div id="details">
+                <div>
+                    <div class="detail_title">
+                        品牌
+                    </div>
+                    <div class="detail_description">
+                        @row.Brand
+                    </div>
+                </div>
+                <div>
+                    <div class="detail_title">
+                        价格
+                    </div>
+                    <div class="detail_description">
+                        £@row.Price
+                    </div>
+                </div>
+                <div>
+                    <div class="detail_title">
+                        材质
+                    </div>
+                    <div class="detail_description">
+                        @row.Material
+                    </div>
+                </div>
+                <div>
+                    <div class="detail_title">
+                        尺寸
+                    </div>
+                    <div id="size_description">
+                        @row.Size
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="footer">
+            <h1>All rights reserved.</h1>
+        </div>
+    </body>
+</html>
+

@@ -1,0 +1,18 @@
+﻿@{
+    var db = Database.Open("main");
+    var selectQueryString = "SELECT * FROM main";
+    var row = db.Query(selectQueryString).First();
+}
+<div id="thumbnail">
+    @foreach(var imgLink in row.ImageLinks.Split(';'))
+    {
+        <div class="img">
+            <a target="_blank" href="@imgLink">
+            <img src="@imgLink" alt="图片链接失效">
+            </a>
+        </div>
+    }
+</div>
+<div id="details">
+ 
+</div>

@@ -1,0 +1,65 @@
+﻿@{
+    var db = Database.Open("main");
+    var selectQueryString = "SELECT * FROM main WHERE ID=00001";
+    var row = db.Query(selectQueryString).First();
+}
+<div id="galary">
+    @foreach(var imgLink in row.ImageLinks.Split(';'))
+    {
+        <div class="img">
+            <a target="_blank" href="@imgLink">
+            <img src="@imgLink" alt="图片链接失效">
+            </a>
+        </div>
+    }
+</div>
+<div id="details">
+    <div>
+        <div class="detail_title">
+            名称
+        </div>
+        <div class="detail_description">
+            @row.Name
+        </div>
+    </div>
+    <div>
+        <div class="detail_title">
+            品牌
+        </div>
+        <div class="detail_description">
+            @row.Brand
+        </div>
+    </div>
+    <div>
+        <div class="detail_title">
+            价格
+        </div>
+        <div class="detail_description">
+            £@row.Price
+        </div>
+    </div>
+    <div>
+        <div class="detail_title">
+            材质
+        </div>
+        <div class="detail_description">
+            @row.Material
+        </div>
+    </div>
+    <div>
+        <div class="detail_title">
+            尺寸
+        </div>
+        <div id="size_description">
+            @row.Size
+        </div>
+    </div>
+    <div>
+        <div class="detail_title">
+            介绍
+        </div>
+        <div id="size_description">
+            @row.Description
+        </div>
+    </div>
+</div>
