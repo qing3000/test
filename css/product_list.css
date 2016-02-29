@@ -1,0 +1,40 @@
+#thumbnail_list {
+    width: 750px;
+    margin:  auto;
+}
+#thumbnail {
+    margin: 15px;
+    float: left;
+    width:  220px;
+    height: 300px;
+}
+#thumbnail_image {
+    border: 1px solid #ccc;
+    width: 100%;
+    height: 90%;
+    line-height: 280px;
+}
+#thumbnail_image:hover {
+    border: 1px solid #777;
+}
+#thumbnail_image img {
+    width: 100%;
+    vertical-align: middle;
+}
+#thumbnail_description {
+    position: relative;
+    bottom: 0px;
+    width: 100%;
+}
+
+#thumbnail_name {
+    float: left;
+}
+#thumbnail_brand {
+    text-align:center;
+    color: #0094ff;
+}
+#thumbnail_price {
+    float: right;
+}
+
