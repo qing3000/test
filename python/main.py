@@ -56,11 +56,12 @@ def ExportSoup(soup, fn):
     f = codecs.open(fn, encoding = 'utf-8', mode = 'w')
     f.write(ss)
     f.close()
+
        
 product_url='http://www.next.co.uk/x57396s1'
 
 content = phantom_loadpage(product_url)
-soup = BeautifulSoup (content)
+soup = Bea utifulSoup (content)
 
 #find all the images
 data=soup.findAll('div',"ThumbNailNavClip")
