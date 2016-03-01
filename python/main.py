@@ -57,7 +57,7 @@ def ExportSoup(soup, fn):
     f.write(ss)
     f.close()
 
-       
+     
 product_url='http://www.next.co.uk/x57396s1'
 
 content = phantom_loadpage(product_url)
