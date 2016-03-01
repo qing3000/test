@@ -7,8 +7,9 @@
     {
         string[] imgLinks = @row.ImageLinks.Split(';');
         string firstImgLink = imgLinks.First();
+        string urlString = string.Format("/ProductViewer.cshtml?id={0}", row.ID);
         <div id="thumbnail">
-            <a target="_blank" href="@firstImgLink">
+            <a target="_blank" href=@urlString>
                 <div id="thumbnail_image">
                     <img src="@firstImgLink" alt="图片链接失效">
                 </div>
