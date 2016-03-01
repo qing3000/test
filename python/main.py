@@ -9,6 +9,7 @@ from bs4 import BeautifulSoup
 import re
 import urllib2
 import codecs
+import os
 import pdb
 
 
@@ -38,7 +39,7 @@ def phantom_loadpage(url):
     f.write("setTimeout(function(){console.log(page.content);phantom.exit()},2000);\n");
     f.write("};\n")
     f.close()
-    #os.system('phantomjs loadpage.js>htmlcode.txt')
+    os.system('phantomjs loadpage.js>htmlcode.txt')
     content=open('htmlcode.txt').read()
     return content
 
@@ -58,10 +59,10 @@ def ExportSoup(soup, fn):
     f.close()
 
      
-product_url='http://www.next.co.uk/x57396s1'
+product_url='http://www.next.co.uk/x57794s9'
 
 content = phantom_loadpage(product_url)
-soup = Bea utifulSoup (content)
+soup = BeautifulSoup (content)
 
 #find all the images
 data=soup.findAll('div',"ThumbNailNavClip")
@@ -81,7 +82,7 @@ for product in products:
     ExportSoup(product, 'soup.html')
     
     title = unicode(product.findAll('div','Title')[0].findAll(re.compile('^h'))[0].string)
-    description=product.findAll('div','Composition')[0].a['data-description']
+    description=product.findAll('div','tov')[0].a['data-description']
     overall_price_str=product.findAll('div','Price')[0].contents[0].string
     if '-' in overall_price_str:
         overall_price=float(overall_price_str[1:overall_price_str.find('-')-1])
