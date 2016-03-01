@@ -8,7 +8,9 @@ import bs4
 from bs4 import BeautifulSoup
 import re
 import urllib2
+import codecs
 import pdb
+
 
 def translate(to_translate, to_langage="zh", langage="en"):
     '''Return the translation using google translate
@@ -48,6 +50,12 @@ def size_string_parser(ss):
         price=-1
         size_str=ss.split('-')[0].strip()
     return size_str,price
+
+def ExportSoup(soup, fn):
+    ss = unicode.join(u'\n',map(unicode,product))    
+    f = codecs.open(fn, encoding = 'utf-8', mode = 'w')
+    f.write(ss)
+    f.close()
        
 product_url='http://www.next.co.uk/x57396s1'
 
@@ -69,7 +77,9 @@ else:
     sex='boy'
 products=soup.findAll('article','Style')    
 for product in products:
-    title=unicode(product.findAll('div','Title')[0].findAll(re.compile('^h'))[0].string)
+    ExportSoup(product, 'soup.html')
+    
+    title = unicode(product.findAll('div','Title')[0].findAll(re.compile('^h'))[0].string)
     description=product.findAll('div','Composition')[0].a['data-description']
     overall_price_str=product.findAll('div','Price')[0].contents[0].string
     if '-' in overall_price_str:
