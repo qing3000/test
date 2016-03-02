@@ -39,8 +39,8 @@ def phantom_loadpage(url):
     f.write("setTimeout(function(){console.log(page.content);phantom.exit()},2000);\n");
     f.write("};\n")
     f.close()
-    os.system('phantomjs loadpage.js>htmlcode.txt')
-    content=open('htmlcode.txt').read()
+    #os.system('phantomjs loadpage.js>htmlcode.txt')
+    content=open('htmlcode.html').read()
     return content
 
 def size_string_parser(ss):
@@ -53,12 +53,17 @@ def size_string_parser(ss):
     return size_str,price
 
 def ExportSoup(soup, fn):
-    ss = unicode.join(u'\n',map(unicode,product))    
+    ss = unicode.join(u'\n',map(unicode,soup))    
     f = codecs.open(fn, encoding = 'utf-8', mode = 'w')
     f.write(ss)
     f.close()
 
-     
+def AddTranslation(product):
+    product['Chinese Title'] = translate(product['title'])
+    product['Chinese Description'] = translate(product['description'])
+    product['Chinese Material'] = translate(product['material'])
+    return product
+    
 product_url='http://www.next.co.uk/x57794s9'
 
 content = phantom_loadpage(product_url)
@@ -68,35 +73,53 @@ soup = BeautifulSoup (content)
 data=soup.findAll('div',"ThumbNailNavClip")
 img_links=[]
 for child in data[0].ul.children:
-    if type(child)==bs4.element.Tag:
+    if type(child) == bs4.element.Tag:
         img_links.append(child.a['rel'][0])
 
-pdts=[]
-department=soup.findAll('li','Breadcrumb')[3].text
+department=soup.findAll('li','Breadcrumb')[2].text
 if 'girl' in department.lower():
     sex='girl'
 else:
     sex='boy'
+
+pdts=[]
 products=soup.findAll('article','Style')    
 for product in products:
-    ExportSoup(product, 'soup.html')
-    
-    title = unicode(product.findAll('div','Title')[0].findAll(re.compile('^h'))[0].string)
-    description=product.findAll('div','tov')[0].a['data-description']
-    overall_price_str=product.findAll('div','Price')[0].contents[0].string
-    if '-' in overall_price_str:
-        overall_price=float(overall_price_str[1:overall_price_str.find('-')-1])
+    ExportSoup(product,'soup.html')    
+    title = product.findAll('div','Title')[0].text.strip()
+    #title = unicode(product.findAll('div','Title')[0].findAll(re.compile('^h'))[0].string)
+    contents = product.findAll('div','StyleContent')[0]
+    description = contents.div.text
+    material = contents.contents[3].text
+    priceStr = product.findAll('div','Price')[0].text
+    if ' - ' in priceStr:
+        ss = priceStr.split(' - ')
+        priceRange = [float(ss[0].strip()[1:]), float(ss[1].strip()[1:])]
     else:
-        overall_price=float(overall_price_str[1:])
-    dropdowns=product.findAll('select','SizeSelector')[0].findAll('option')
-    sizes=[]
-    for dropdown in dropdowns[1:]:
-        size_str,individual_price=size_string_parser(dropdown.text)
-        if individual_price==-1:
-            individual_price=overall_price
-        sizes.append({'size':size_str,'price':individual_price,'instock':dropdown['class'][0]==u'InStock'})
-    try:
-        title_chinese = translate(title)
-    except ValueError:
-        title_chinese = title
-    pdts.append({'department':department,'sex':sex,'title':title,'chinese_title':title_chinese,'description':translate(description),'overall_price':overall_price,'sizes':sizes})
+        priceRange = [float(priceStr[1:])] * 2
+    options = product.findAll('div','SizeSelector')[0].div('ul')[0].contents[1:]
+    prices = []
+    sizes = []
+    instocks = []
+    for option in options:
+        instocks.append(option.attrs['class'][0] == 'InStock')
+        if ' - ' in option.text:
+            ss = option.text.split(' - ')
+            sizes.append(ss[0].strip())
+            prices.append(float(ss[1].strip()[1:]))
+        else:
+            sizes.append(option.text.strip())
+            prices.append(priceRange[0])
+    pdt = {'department':department,\
+                 'sex':sex,\
+                 'title':title,\
+                 'description': description,\
+                 'material' : material,\
+                 'price':priceRange,\
+                 'sizes':sizes,\
+                 'prices': prices,\
+                 'instocks' : instocks}
+    print pdt
+    pdt = AddTranslation(pdt)                 
+    print pdt
+    pdts.append(pdt)
