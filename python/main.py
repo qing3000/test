@@ -10,7 +10,9 @@ import re
 import urllib2
 import codecs
 import os
+import codecs
 import pdb
+import collections
 
 
 def translate(to_translate, to_langage="zh", langage="en"):
@@ -63,63 +65,103 @@ def AddTranslation(product):
     product['Chinese Description'] = translate(product['description'])
     product['Chinese Material'] = translate(product['material'])
     return product
+
+def save_url_image(url,fn):
+    data = urllib2.urlopen(url)
+    f=open(fn,'wb')
+    f.write(data.read())
+    f.close()
     
-product_url='http://www.next.co.uk/x57794s9'
-
-content = phantom_loadpage(product_url)
-soup = BeautifulSoup (content)
-
-#find all the images
-data=soup.findAll('div',"ThumbNailNavClip")
-img_links=[]
-for child in data[0].ul.children:
-    if type(child) == bs4.element.Tag:
-        img_links.append(child.a['rel'][0])
-
-department=soup.findAll('li','Breadcrumb')[2].text
-if 'girl' in department.lower():
-    sex='girl'
-else:
-    sex='boy'
-
-pdts=[]
-products=soup.findAll('article','Style')    
-for product in products:
-    ExportSoup(product,'soup.html')    
-    title = product.findAll('div','Title')[0].text.strip()
-    #title = unicode(product.findAll('div','Title')[0].findAll(re.compile('^h'))[0].string)
-    contents = product.findAll('div','StyleContent')[0]
-    description = contents.div.text
-    material = contents.contents[3].text
-    priceStr = product.findAll('div','Price')[0].text
-    if ' - ' in priceStr:
-        ss = priceStr.split(' - ')
-        priceRange = [float(ss[0].strip()[1:]), float(ss[1].strip()[1:])]
+def ParseNextProductPage(product_url):
+    print 'Load the NEXT product page'
+    content = phantom_loadpage(product_url)    
+    soup = BeautifulSoup (content)
+    
+    print 'Find all the image links'    
+    data=soup.findAll('div',"ThumbNailNavClip")
+    img_links=[]
+    for child in data[0].ul.children:
+        if type(child) == bs4.element.Tag:
+            img_link = child.a['rel'][0]
+            img_links.append(img_link)
+    
+    print 'Parse all the details'''    
+    department=soup.findAll('li','Breadcrumb')[2].text.strip()
+    if 'girl' in department.lower():
+        sex='girl'
     else:
-        priceRange = [float(priceStr[1:])] * 2
-    options = product.findAll('div','SizeSelector')[0].div('ul')[0].contents[1:]
-    prices = []
-    sizes = []
-    instocks = []
-    for option in options:
-        instocks.append(option.attrs['class'][0] == 'InStock')
-        if ' - ' in option.text:
-            ss = option.text.split(' - ')
-            sizes.append(ss[0].strip())
-            prices.append(float(ss[1].strip()[1:]))
+        sex='boy'
+    
+    pdts=[]
+    products=soup.findAll('article','Style')    
+    for product in products:
+        productID = product.findAll('div','ItemNumber')[0].text
+        title = product.findAll('div','Title')[0].text.strip()
+        contents = product.findAll('div','StyleContent')[0]
+        description = contents.div.text.strip()
+        description = description.replace(',',';')
+        material = contents.contents[3].text.strip()
+        material = material.replace(',',';')
+        priceStr = product.findAll('div','Price')[0].text
+        if ' - ' in priceStr:
+            ss = priceStr.split(' - ')
+            priceRange = [float(ss[0].strip()[1:]), float(ss[1].strip()[1:])]
         else:
-            sizes.append(option.text.strip())
-            prices.append(priceRange[0])
-    pdt = {'department':department,\
-                 'sex':sex,\
-                 'title':title,\
-                 'description': description,\
-                 'material' : material,\
-                 'price':priceRange,\
-                 'sizes':sizes,\
-                 'prices': prices,\
-                 'instocks' : instocks}
-    print pdt
-    pdt = AddTranslation(pdt)                 
-    print pdt
-    pdts.append(pdt)
+            priceRange = [float(priceStr[1:])] * 2
+        options = product.findAll('div','SizeSelector')[0].div('ul')[0].contents[1:]
+        prices = []
+        sizes = []
+        instocks = []
+        for option in options:
+            instocks.append(option.attrs['class'][0] == 'InStock')
+            if ' - ' in option.text:
+                ss = option.text.split(' - ')
+                sizes.append(ss[0].strip())
+                prices.append(float(ss[1].strip()[1:]))
+            else:
+                sizes.append(option.text.strip())
+                prices.append(priceRange[0])
+        pdt = collections.OrderedDict([('productID', productID),\
+               ('brand', 'Next'),\
+               ('department', department),\
+               ('sex',sex),\
+               ('title',title),\
+               ('description', description),\
+               ('material' , material),\
+               ('price',priceRange),\
+               ('sizes',sizes),\
+               ('prices', prices),\
+               ('instocks' , instocks),\
+               ('ImageLinks', img_links)])
+        pdt = AddTranslation(pdt)                 
+        pdts.append(pdt)
+    
+    for i, pdt in enumerate(pdts):
+        stylewiths = []
+        for j, otherPdt in enumerate(pdts):
+            if j != i:
+                stylewiths.append(otherPdt['productID'])
+        pdt['stylewith'] = ';'.join(stylewiths)
+    return pdts;
+
+product_list_url = 'http://www.next.co.uk/shop/gender-oldergirls-gender-youngergirls-category-dresses-0#2_2455'
+data = urllib2.urlopen(product_list_url)
+soup = BeautifulSoup (data)
+ExportSoup(soup, 'list.html')
+
+#product_url='http://www.next.co.uk/x57794s9'
+#products = ParseNextProductPage(product_url)
+#
+#f = codecs.open('c:\\temp\\database.csv',encoding = 'utf-8', mode = 'w')
+#f.write(u'ID,Brand,Department,Sex,Title,Description,Material,Price,Sizes, Prices,Availability,ImageLinks,TitleChinese,DescriptionChinese,MaterialChinese,StyleWith\n')
+#for product in pdts:
+#    for i, key in enumerate(product.keys()):
+#        ss = product[key]
+#        if type(ss) == list:
+#            f.write(';'.join(map(str, ss)))
+#        else:
+#            f.write(ss)
+#        if i < len(product.keys()) - 1:
+#            f.write(',')
+#    f.write('\n')
+#f.close()
