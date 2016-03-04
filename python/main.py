@@ -13,6 +13,7 @@ import os
 import codecs
 import pdb
 import collections
+import subprocess
 
 
 def translate(to_translate, to_langage="zh", langage="en"):
@@ -41,7 +42,8 @@ def phantom_loadpage(url):
     f.write("setTimeout(function(){console.log(page.content);phantom.exit()},2000);\n");
     f.write("};\n")
     f.close()
-    #os.system('phantomjs loadpage.js>htmlcode.txt')
+    subprocess.call('phantomjs loadpage.js>htmlcode.html', shell=True)
+    #os.system('phantomjs loadpage.js>htmlcode.html')
     content=open('htmlcode.html').read()
     return content
 
@@ -100,9 +102,9 @@ def ParseNextProductPage(product_url):
         contents = product.findAll('div','StyleContent')[0]
         description = contents.div.text.strip()
         description = description.replace(',',';')
-        material = contents.contents[3].text.strip()
+        material = contents.contents[-2].text.strip()
         material = material.replace(',',';')
-        priceStr = product.findAll('div','Price')[0].text
+        priceStr = product.findAll('div','Price')[0].contents[0]
         if ' - ' in priceStr:
             ss = priceStr.split(' - ')
             priceRange = [float(ss[0].strip()[1:]), float(ss[1].strip()[1:])]
@@ -144,24 +146,37 @@ def ParseNextProductPage(product_url):
         pdt['stylewith'] = ';'.join(stylewiths)
     return pdts;
 
-product_list_url = 'http://www.next.co.uk/shop/gender-oldergirls-gender-youngergirls-category-dresses-0#2_2455'
-data = urllib2.urlopen(product_list_url)
-soup = BeautifulSoup (data)
-ExportSoup(soup, 'list.html')
+home_url = 'http://www.next.co.uk'
+product_list_url = home_url +'/shop/gender-oldergirls-gender-youngergirls-category-dresses#1'
 
-#product_url='http://www.next.co.uk/x57794s9'
-#products = ParseNextProductPage(product_url)
-#
-#f = codecs.open('c:\\temp\\database.csv',encoding = 'utf-8', mode = 'w')
-#f.write(u'ID,Brand,Department,Sex,Title,Description,Material,Price,Sizes, Prices,Availability,ImageLinks,TitleChinese,DescriptionChinese,MaterialChinese,StyleWith\n')
-#for product in pdts:
-#    for i, key in enumerate(product.keys()):
-#        ss = product[key]
-#        if type(ss) == list:
-#            f.write(';'.join(map(str, ss)))
-#        else:
-#            f.write(ss)
-#        if i < len(product.keys()) - 1:
-#            f.write(',')
-#    f.write('\n')
-#f.close()
+data = urllib2.urlopen(product_list_url)
+##f=open('list.html','wb')
+##f.write(data.read())
+##f.close()
+
+
+soup = BeautifulSoup (data)
+productList = soup.find('div','defaultView').findAll('div','Price')
+print len(productList)
+products = []
+for product in productList:
+    product_url = home_url + product.a['href']
+    print product_url
+    products = products + ParseNextProductPage(product_url)
+
+f = codecs.open('c:\\temp\\database.csv',encoding = 'utf-8', mode = 'w')
+f.write(u'ID,Brand,Department,Sex,Title,Description,Material,Price,Sizes, Prices,Availability,ImageLinks,TitleChinese,DescriptionChinese,MaterialChinese,StyleWith\n')
+ids = []
+for product in products:
+    if product['productID'] not in ids:
+        ids.append(product['productID'])
+        for i, key in enumerate(product.keys()):
+            ss = product[key]
+            if type(ss) == list:
+                f.write(';'.join(map(str, ss)))
+            else:
+                f.write(ss)
+            if i < len(product.keys()) - 1:
+                f.write(',')
+        f.write('\n')
+f.close()

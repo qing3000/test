@@ -1,7 +1,7 @@
 ﻿@{
-    var productId = Request.QueryString["id"];
-    var db = Database.Open("main");
-    var selectQueryString = string.Format("SELECT * FROM main WHERE ID={0}", productId);
+    var productId = Request.QueryString["ID"];
+    var db = Database.Open("test");
+    var selectQueryString = string.Format("SELECT * FROM test WHERE ID='{0}'",productId);
     var row = db.Query(selectQueryString).First();
 }
 <div id="galary">
@@ -20,7 +20,7 @@
             名称
         </div>
         <div class="detail_description">
-            @row.Name
+            @row.TitleChinese
         </div>
     </div>
     <div>
@@ -44,7 +44,7 @@
             材质
         </div>
         <div class="detail_description">
-            @row.Material
+            @row.MaterialChinese
         </div>
     </div>
     <div>
@@ -52,7 +52,7 @@
             尺寸
         </div>
         <div id="size_description">
-            @row.Size
+            @row.Sizes
         </div>
     </div>
     <div>
@@ -60,7 +60,7 @@
             介绍
         </div>
         <div id="size_description">
-            @row.Description
+            @row.DescriptionChinese
         </div>
     </div>
 </div>

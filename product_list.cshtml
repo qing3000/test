@@ -1,6 +1,6 @@
 ﻿@{
-    var db = Database.Open("main");
-    var selectQueryString = "SELECT * FROM main";
+    var db = Database.Open("test");
+    var selectQueryString = "SELECT * FROM test";
 }
 <div id="thumbnail_list">
     @foreach(var row in db.Query(selectQueryString))
@@ -16,13 +16,13 @@
              </a>
             <div id="thumbnail_description">
                 <div id="thumbnail_name">
-                    @row.Name
+                    @row.TitleChinese
                 </div>
                 <div id="thumbnail_price">
-                    @row.price
+                    @row.Price
                 </div>
                     <div id="thumbnail_brand">
-                    @row.brand
+                    @row.Brand
                 </div>
             </div>
         </div>
