@@ -3,17 +3,16 @@
     margin:  auto;
 }
 #thumbnail {
-    border: 2px solid red;
     margin: 15px;
     float: left;
     width:  220px;
-    height: 500px;
+    height: 440px;
 }
 #thumbnail_image {
     border: 1px solid #ccc;
     width: 100%;
-    height: 70%;
-    line-height: 70%;
+    height: 75%;
+    line-height: 75%;
 }
 #thumbnail_image:hover {
     border: 1px solid #777;
