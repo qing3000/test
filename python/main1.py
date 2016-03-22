@@ -80,7 +80,10 @@ def AddTranslation(product):
     print product['title']
     product['Chinese Title'] = translate(product['title'])
     print product['description']
-    product['Chinese Description'] = translate(product['description'])
+    ChineseDescription = []    
+    for sentence in product['description'].split('\n'):
+        ChineseDescription.append(translate(sentence))
+    product['Chinese Description'] = u'\n'.join(ChineseDescription)
     print product['material']
     product['Chinese Material'] = translate(product['material'])
     return product
@@ -99,7 +102,67 @@ def ParseNextProductListPage(soup):
         product_url = home_url + product.a['href']
         print product_url
         products.append(ParseNextProductPage(product_url))
+
+def CleanUp(ss):
+    ss = ss.replace(',',';')
+    ss = ss.replace('\n',' ')
+    ss = ss.replace('\r',' ')
+    return ss
     
+def CleanUpStringForCSV(product):
+    product['description'] = CleanUp(product['description'])
+    product['title'] = CleanUp(product['title'])
+    product['material'] = CleanUp(product['material'])
+    ss = []
+    for size in product['sizes']:
+        ss.append(CleanUp(size))
+    product['sizes'] = ss
+    
+    return product
+    
+def ParseMamaProductPage(product_url):
+    data = urllib2.urlopen(product_url)
+    soup = BeautifulSoup (data)
+    productID = soup.findAll('span',id = 'itemCode')[0].text.strip()
+    breadCrumbs = soup.findAll('div',id = 'Breadcrumbs')[0].text.strip()
+    if 'girls' in breadCrumbs.lower():
+        sex = 'girl'
+    else:
+        sex = 'boy'
+    department = breadCrumbs.replace('\n','/')
+    title = soup.findAll('div',id = 'ProductSummary')[0].h1.text.strip()
+    description = soup.findAll('div',id = 'ProductDescriptionBody')[0].text.strip()
+    priceString = soup.findAll('strong','itemPrice')[0].text.strip()
+    price = float(priceString.split(u'£')[-1])
+    priceRange = [price, price]
+    sizesSoup = soup.findAll('select',id = 'size')[0]
+    sizesString = []
+    for sizeSoup in sizesSoup.children:
+        if type(sizeSoup) == bs4.element.Tag:
+            sizesString.append(sizeSoup.text.strip())
+    sizes = sizesString[1:]
+    instock = soup.findAll('input', id = 'outofstock')[0]['value'] == 'false'
+    instocks = [instock] * len(sizesString)
+    prices = [price] * len(sizesString)
+    material = u''
+    
+    img_links = []
+    for linkSoup in soup.findAll('li', 'productThumbnails'):
+        img_links.append(linkSoup['data-imageurl'])
+    pdt = collections.OrderedDict([('productID', productID),\
+           ('brand', 'Mamas & Papas'),\
+           ('department', department),\
+           ('sex',sex),\
+           ('title',title),\
+           ('description', description),\
+           ('material' , material),\
+           ('price',priceRange),\
+           ('sizes',sizes),\
+           ('prices', prices),\
+           ('instocks' , instocks),\
+           ('ImageLinks', img_links)])
+    return pdt
+
 def ParseNextProductPage(product_url):
     print '\tLoad the NEXT product page'
     content = phantom_loadpage(product_url)    
@@ -191,7 +254,9 @@ def ExportToDatabase(products, fn):
 
 home_url = 'http://www.next.co.uk'
 product_list_url = home_url +'/shop/gender-oldergirls-gender-youngergirls-category-dresses#1'
-product_list_url = 'http://www.mamasandpapas.com/range/all-girls/10084/'
+
+home_url = 'http://www.mamasandpapas.com'
+product_list_url = home_url + '/range/all-girls/10084/'
 #data = urllib2.urlopen(product_list_url)
 
 #f = open('temp.html','w')
@@ -202,15 +267,18 @@ f = open('temp.html','r')
 data = f.read()
 f.close()
 
-
 soup = BeautifulSoup (data)
-
 #products = ParseNextProductListPage(soup)
 products = soup.findAll('div',id = 'rangePageContainer')[0].findAll('div','genericProduct')
-for product in products:
+pdts = []
+for i, product in enumerate(products):
+    print i, len(products)
     ss = product.findAll('div','genericProductImages')[0]
-    print home_url + ss.a['href']
-    
-    
+    product_url = home_url + ss.a['href']
+    pdt = ParseMamaProductPage(product_url)
+    pdt = CleanUpStringForCSV(pdt)
+    pdt = AddTranslation(pdt)
+    pdt['stylewith'] = ''    
+    pdts.append(pdt)
 
-#ExportToDatabase(products, 'c:\\temp\\database.csv')
+ExportToDatabase(pdts, 'c:\\temp\\database.csv')
