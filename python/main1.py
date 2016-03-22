@@ -103,21 +103,23 @@ def ParseNextProductListPage(soup):
         print product_url
         products.append(ParseNextProductPage(product_url))
 
-def CleanUp(ss):
+def CleanUpList(ll):
+    newlist = []
+    for oneitem in ll:
+        newlist.append(CleanUpString(oneitem))
+    return newlist
+    
+def CleanUpString(ss):
     ss = ss.replace(',',';')
     ss = ss.replace('\n',' ')
     ss = ss.replace('\r',' ')
     return ss
     
 def CleanUpStringForCSV(product):
-    product['description'] = CleanUp(product['description'])
-    product['title'] = CleanUp(product['title'])
-    product['material'] = CleanUp(product['material'])
-    ss = []
-    for size in product['sizes']:
-        ss.append(CleanUp(size))
-    product['sizes'] = ss
-    
+    product['description'] = CleanUpString(product['description'])
+    product['title'] = CleanUpString(product['title'])
+    product['material'] = CleanUpString(product['material'])
+    product['sizes'] = CleanUpList(product['sizes'])
     return product
     
 def ParseMamaProductPage(product_url):
