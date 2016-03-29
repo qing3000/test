@@ -1,9 +1,10 @@
 #filters{
     float: right;
-    background-color: #3094ff;
 }
 
-#filter {
+.filter {
+    border: 1px solid red;
+    color: white;
     float: left;
-    background-color: #0094ff;
+    margin: 14px 16px;
 }
