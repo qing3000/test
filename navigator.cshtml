@@ -1,4 +1,9 @@
-﻿<div id="header1" style="text-align: center;">
+﻿@{
+    var db = Database.Open("test");
+    var ageSelectQueryString = "SELECT * FROM age";
+    var typeSelectQueryString = "SELECT * FROM type";
+}
+<div id="header1" style="text-align: center;">
     <p>亲亲我的宝贝</p>
 </div>
 <div id="navigator">
@@ -22,11 +27,30 @@
         </div>
       </li>
       <li id="filters">
-          <form>
-              <div class="filter">年龄:<input type="text" name="age"></div>
+          <form method="get" action="process.asp">
+              <div class="filter">年龄:
+                    <select name="age">
+                        @foreach(var row in db.Query(ageSelectQueryString))
+                        {
+                            string startAgeString = @row.StartAge == 0 && @row.StartMonth != 0 ? "" : @row.StartAge + "岁";
+                            string startMonthString = @row.StartMonth == 0 ? "" : @row.StartMonth + "个月";
+                            string endAgeString = @row.EndAge == 0 ? "" : @row.EndAge + "岁";
+                            string endMonthString = @row.EndMonth == 0 ? "" : @row.EndMonth + "个月";
+                            string ageString = @startAgeString + @startMonthString + "--" + @endAgeString + @endMonthString;
+                            <option value="volvo">@ageString</option>
+                        }
+                    </select>
+              </div>
               <div class="filter"><input type="radio" name="sex" value="boy" checked>男</div>
               <div class="filter"><input type="radio" name="sex" value="girl">女</div>
-              <div class="filter">类别:<input type="text" name="type"></div>
+              <div class="filter">类别:
+                    <select name="type">
+                        @foreach(var row in db.Query(typeSelectQueryString))
+                        {
+                            <option value="volvo">@row.typeChinese</option>
+                        }
+                    </select>
+              </div>
               <div class="filter">关键字:<input type="text" name="keyword"></div>
               <div class="filter"><input type="submit" value="Submit"></div>
           </form>

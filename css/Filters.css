@@ -3,8 +3,12 @@
 }
 
 .filter {
-    border: 1px solid red;
     color: white;
+    float: left;
+    margin: 14px 16px;
+}
+
+.dropfilter {
     float: left;
     margin: 14px 16px;
 }
