@@ -1,0 +1,40 @@
+﻿@{
+    var age = Request.QueryString["age"];
+    var sex = Request.QueryString["sex"];
+    var type = Request.QueryString["type"];
+    var keyword = Request.QueryString["keyword"];
+    var db = Database.Open("test");
+    var selectQueryString = string.Format("SELECT * FROM test WHERE Sex='{0}'", sex);    
+    var rows  = db.Query(selectQueryString);
+    var nn = rows.Count();
+}
+<div id="thumbnail_list">
+    <p>@sex,@age,@type,@keyword,@nn</p>
+    @foreach(var row in rows)
+    {
+        string[] imgLinks = @row.ImageLinks.Split(';');
+        string firstImgLink = imgLinks.First();
+        string urlString = string.Format("/ProductViewer.cshtml?id={0}", row.ID);
+        <div id="thumbnail">
+            <a target="_blank" href=@urlString>
+                <div id="thumbnail_image">
+                    <img src="@firstImgLink" alt="图片链接失效">
+                </div>
+             </a>
+            <div id="thumbnail_description">
+                <div id="thumbnail_name">
+                    @row.TitleChinese
+                </div>
+                <div id="thumbnail_brand">
+                    @row.Brand
+                </div>
+                <div id="thumbnail_price">
+                    @row.Price
+                </div>
+            </div>
+        </div>
+    }
+</div>
+<div id="details">
+ 
+</div>

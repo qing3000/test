@@ -1,4 +1,8 @@
 ﻿@{
+    var age = Request.QueryString["age"];
+    var sex = Request.QueryString["sex"];
+    var type = Request.QueryString["type"];
+    var keyword = Request.QueryString["keyword"];    
     var db = Database.Open("test");
     var ageSelectQueryString = "SELECT * FROM age";
     var typeSelectQueryString = "SELECT * FROM type";
@@ -27,7 +31,7 @@
         </div>
       </li>
       <li id="filters">
-          <form method="get" action="process.asp">
+          <form method="get" action="ProductQueryList.cshtml">
               <div class="filter">年龄:
                     <select name="age">
                         @foreach(var row in db.Query(ageSelectQueryString))
@@ -37,7 +41,8 @@
                             string endAgeString = @row.EndAge == 0 ? "" : @row.EndAge + "岁";
                             string endMonthString = @row.EndMonth == 0 ? "" : @row.EndMonth + "个月";
                             string ageString = @startAgeString + @startMonthString + "--" + @endAgeString + @endMonthString;
-                            <option value="volvo">@ageString</option>
+                            string valueString = string.Format("{0}-{1}", @row.StartAge + @row.StartMonth / 12.0, @row.EndAge + @row.EndMonth / 12.0);
+                            <option value = @valueString>@ageString</option>
                         }
                     </select>
               </div>
@@ -47,12 +52,12 @@
                     <select name="type">
                         @foreach(var row in db.Query(typeSelectQueryString))
                         {
-                            <option value="volvo">@row.typeChinese</option>
+                            <option value=@row.type>@row.typeChinese</option>
                         }
                     </select>
               </div>
               <div class="filter">关键字:<input type="text" name="keyword"></div>
-              <div class="filter"><input type="submit" value="Submit"></div>
+              <div class="filter"><input type="submit" value="找一找" onClick="RatioCheck()"></div>
           </form>
       <li>
     </ul>

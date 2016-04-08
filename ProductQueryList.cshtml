@@ -1,4 +1,5 @@
-﻿<!DOCTYPE html>
+﻿
+<!DOCTYPE html>
 <html lang="cn">
     <head>
         <meta charset="utf-8" />
@@ -7,27 +8,12 @@
         <link rel="stylesheet" type="text/css" href="css\Menus.css">
         <link rel="stylesheet" type="text/css" href="css\Filters.css">
         <link rel="stylesheet" type="text/css" href="css\product_list.css">
-    <script>
-function RadioCheck() {
-
-var fruit = new Array('Apples', 'Oranges', 'Bananas', 'Kiwis', 'Saskatoons', 'Grapes');
-var selection = document.quiz.colour;
-
-for (i=0; i<selection.length; i++)
-
-  if (selection[i].checked == true)
-  alert(fruit[i] + ' are ' + selection[i].value + '.')
-
-}
-
-</script>
-    
     </head>
     <body>
         @RenderPage("navigator.cshtml")
-        @*<div id="content" class="clearfix">
-            @RenderPage("product_list.cshtml")
-        </div>*@
+        <div id="content" class="clearfix">
+            @RenderPage("product_query_list.cshtml")
+        </div>
         <div id="footer">
             <h1>EDS microanalysis.</h1>
         </div>
